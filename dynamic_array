@@ -1,0 +1,157 @@
+        cur = 0;
+
+        for (i = 0; i < 10; i++) {
+            bucket = darray_get(buckets, i);
+
+           for (j = 0; j <= (bucket->last); j++) {
+                darray_set(array,
+                           cur++,
+                           darray_get(bucket, j));
+           }
+        }
+
+        mask *= 10;
+
+    } while (!sorted);
+
+    return array;
+}
+
+void
+test_darray_init()
+{
+    DArray *array = darray_init();
+
+    assert(array->last == -1);
+    assert(array->size == 16);
+}
+
+void
+test_darray_get_set()
+{
+    DArray *array = darray_init();
+
+    int *i;
+    i = malloc(sizeof(int));
+    *i = 1500;
+
+    darray_set(array, 0, i);
+
+    assert(array->last == 0);
+    assert(array->size == 16);
+    assert(*(int *)darray_get(array, 0) == 1500);
+}
+
+void 
+test_darray_resize()
+{
+    DArray *array = darray_init();
+
+    int *i;
+    i = malloc(sizeof(int));
+    *i = 1500;
+
+    darray_set(array, 50, i);
+
+    assert(array->last == 50);
+    assert(array->size == 64);
+    assert(*(int *)darray_get(array, 50) == 1500);
+
+    darray_set(array, 100, i);
+
+    assert(array->last == 100);
+    assert(array->size == 128);
+    assert(*(int *)darray_get(array, 50)  == 1500);
+    assert(*(int *)darray_get(array, 100) == 1500);
+}
+
+void
+test_darray_push_pop()
+{
+    DArray *array = darray_init();
+    int *i, j;
+
+    for (j = 0; j < 16; j++) {
+        i = malloc(sizeof(int));
+        *i = j;
+        darray_push(array, i);
+    }
+
+    assert(array->last == 15);
+    assert(array->size == 16);
+    assert(*(int *)darray_get(array, 0)  == 0);
+    assert(*(int *)darray_get(array, 15) == 15);
+
+    i = malloc(sizeof(int));
+    *i = 16;
+    darray_push(array, i);
+
+    assert(array->last == 16);
+    assert(array->size == 32);
+    assert(*(int *)darray_get(array, 0)  == 0);
+    assert(*(int *)darray_get(array, 15) == 15);
+    assert(*(int *)darray_get(array, 16) == 16);
+
+    assert(*(int *)darray_pop(array) == 16);
+    assert(darray_get(array, 16) == NULL);
+    assert(array->last == 15);
+    assert(array->size == 32);
+}
+
+void
+test_darray_radix_sort()
+{
+    srand(time(NULL));
+
+    DArray *array;
+    int *i, j, v1, v2;
+
+    array = darray_init();
+
+    for (j = 0; j < 10; j++) {
+        i = malloc(sizeof(int));
+        *i = rand() % 1000;
+        darray_push(array, i);
+    }
+
+    /*
+    printf("UNSORTED: ");
+    for (j = 0; j < 10; j++) {
+        printf("%d ", *(int *)darray_get(array, j));    
+    } 
+    printf("\n");
+    */
+
+    darray_radix_sort(array);
+
+    /*
+    printf("SORTED:   ");
+    for (j = 0; j < 10; j++) {
+        printf("%d ", *(int *)darray_get(array, j));    
+    } 
+    printf("\n");
+    */
+
+    for (j = 0; j < 9; j++) {
+        v1 = *(int *)darray_get(array, j);
+        v2 = *(int *)darray_get(array, j + 1);
+
+        assert(v1 <= v2);
+    }
+}
+
+int
+main()
+{
+    test_darray_init();
+
+    test_darray_get_set();
+
+    test_darray_resize();
+
+    test_darray_push_pop();
+
+    test_darray_radix_sort();
+
+    return 1;
+}
