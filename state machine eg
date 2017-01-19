@@ -1,0 +1,232 @@
+#include <stdio.h>
+
+typedef enum
+{
+    eFALSE,
+    eTRUE,
+}BOOL;
+
+typedef enum 
+{
+    eEVENT_X,
+    eEVENT_Y,
+    eEVENT_Z,
+    NEVENTS
+}Event;
+
+typedef enum 
+{
+    eSTATE_X,
+    eSTATE_Y,
+    eSTATE_Z,
+    NSTATES
+}State;
+
+
+struct state_transition
+{ 
+  State (*function)(Event *e); 
+};
+
+
+
+State function_eXsX(Event *e)
+{ 
+    printf("\n xx \n");
+    *e = eEVENT_X;
+    return eSTATE_Y;
+
+}
+State function_eXsY(Event *e)
+{ 
+    printf("\n xy \n");
+    *e = eEVENT_X;
+    return eSTATE_Z;
+}
+
+State function_eXsZ(Event *e)
+{ 
+    printf("\n xz \n");
+    *e = eEVENT_Y;
+    return eSTATE_X;
+}
+State function_eYsX(Event *e)
+{ 
+    printf("\n yx \n");
+    *e = eEVENT_Y;
+    return eSTATE_Y;
+}
+State function_eYsY(Event *e)
+{ 
+    printf("\n yy \n");
+    *e = eEVENT_Y;
+    return eSTATE_Z;
+}
+State function_eYsZ(Event *e)
+{ 
+    printf("\n yz \n");
+    *e = eEVENT_Z;
+    return eSTATE_X;
+}
+State function_eZsX(Event *e)
+{ 
+    printf("\n zx \n");
+    *e = eEVENT_Z;
+    return eSTATE_Y;
+}
+State function_eZsY(Event *e)
+{ 
+    printf("\n zy \n");
+    *e = eEVENT_Z;
+    return eSTATE_Z;
+}
+State function_eZsZ(Event *e)
+{ 
+    printf("\n zz \n");
+    *e = NSTATES;
+    return NSTATES;
+
+}
+
+
+
+struct state_transition stateTrans[NEVENTS][NSTATES] = 
+{    
+      {function_eXsX,function_eXsY,function_eXsZ},
+      {function_eYsX,function_eYsY,function_eYsZ},
+      {function_eZsX,function_eZsY,function_eZsZ},
+};
+
+BOOL applyEvent(State *s, Event *e) 
+{
+    if (*s >= NSTATES || *e >= NEVENTS)
+        return eFALSE;
+    *s = stateTrans[*e][*s].function(e);
+    return eTRUE;
+}
+
+
+int main(int argc,char *argv[])
+{
+    State s = eSTATE_X;
+    Event e = eEVENT_X;
+    while(applyEvent(&s, &e));
+}
+
+/ ********************************* /
+// http://codereview.stackexchange.com/questions/104989/state-machine-implementation
+/ ********************************* /
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
+typedef enum Event
+{
+    eEVENT_X,
+    eEVENT_Y,
+    eEVENT_Z,
+}Event;
+
+typedef enum States
+{
+    eSTATE_X,
+    eSTATE_Y,
+    eSTATE_Z
+}States;
+
+int e = eEVENT_X;
+int s = eSTATE_X;
+
+struct state_transition
+{ 
+  Event EventId;
+  States StateId;
+  void (*function)(void); //call back utility 
+};
+
+#define NSTATES 3
+#define NEVENTS 3
+#define STATE_END 3
+#define EVENT_END 3
+
+void function_eXsX(void)
+{ 
+    printf("\n xx \n");
+    e = eEVENT_X;
+    s = eSTATE_Y;
+
+}
+void function_eXsY(void)
+{ 
+    printf("\n xy \n");
+    e = eEVENT_X;
+    s = eSTATE_Z;
+}
+
+void function_eXsZ(void)
+{ 
+    printf("\n xz \n");
+    e = eEVENT_Y;
+    s = eSTATE_X;
+}
+void function_eYsX(void)
+{ 
+    printf("\n yx \n");
+    e = eEVENT_Y;
+    s = eSTATE_Y;
+}
+void function_eYsY(void)
+{ 
+    printf("\n yy \n");
+    e = eEVENT_Y;
+    s = eSTATE_Z;
+}
+void function_eYsZ(void)
+{ 
+    printf("\n yz \n");
+    e = eEVENT_Z;
+    s = eSTATE_X;
+}
+void function_eZsX(void)
+{ 
+    printf("\n zx \n");
+    e = eEVENT_Z;
+    s = eSTATE_Y;
+}
+void function_eZsY(void)
+{ 
+    printf("\n zy \n");
+    e = eEVENT_Z;
+    s = eSTATE_Z;
+}
+void function_eZsZ(void)
+{ 
+    printf("\n zz \n");
+    e = EVENT_END;
+    s = STATE_END;
+
+}
+
+
+
+struct state_transition stateTrans[NEVENTS][NSTATES] = 
+{    
+      {{eEVENT_X,eSTATE_X,function_eXsX},{eEVENT_X,eSTATE_Y,function_eXsY},{eEVENT_X,eSTATE_Z,function_eXsZ}},
+      {{eEVENT_Y,eSTATE_X,function_eYsX},{eEVENT_Y,eSTATE_Y,function_eYsY},{eEVENT_Y,eSTATE_Z,function_eYsZ}},
+      {{eEVENT_Z,eSTATE_X,function_eZsX},{eEVENT_Z,eSTATE_Y,function_eZsY},{eEVENT_Z,eSTATE_Z,function_eZsZ}},
+};
+
+
+
+int main(int argc,char *argv[])
+{
+
+    while(1)
+    {
+        stateTrans[e][s].function();
+        if(e == STATE_END && s == EVENT_END)
+            break;
+    }
+    return 0;
+}
